@@ -7,6 +7,10 @@
         mc:Ignorable="d"
         Title="Country Info Explorer" Height="450" Width="800">
     <Grid>
-        
+        <Button Content="Fetch from API" HorizontalAlignment="Left" Margin="10,389,0,0" VerticalAlignment="Top" Width="198" Click="Button_Click"/>
+        <ListBox x:Name="lBox" HorizontalAlignment="Left" Height="219" Margin="10,10,0,0" VerticalAlignment="Top" Width="772" MouseDoubleClick="lBox_MouseDoubleClick"/>
+        <TextBox x:Name="tBox" HorizontalAlignment="Left" Height="159" TextWrapping="Wrap" VerticalAlignment="Top" Width="555" Margin="227,250,0,0" Cursor="None"/>
+        <Image x:Name="imageFlag" HorizontalAlignment="Left" Height="118" VerticalAlignment="Top" Width="198" Margin="10,250,0,0"/>
+
     </Grid>
 </Window>

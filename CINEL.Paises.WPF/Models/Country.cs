@@ -18,7 +18,7 @@
         public string Demonym { get; set; }
         public double Area { get; set; }
         public double Gini { get; set; }
-        public List<TimeZoneInfo> Timezones { get; set; }   //potentially wrong
+        public List<string> Timezones { get; set; }   //potentially wrong
         public List<string> Borders { get; set; }
         public string NativeName { get; set; }
         public string NumericCode { get; set; }
@@ -28,5 +28,10 @@
         public string Flag { get; set; }
         public List<RegionalBloc> RegionalBlocs { get; set; }
         public string Cioc { get; set; }
+
+        public override string ToString()
+        {
+            return Cioc + " " + Name;
+        }
     }
 }
