@@ -31,7 +31,7 @@
 
         public override string ToString()
         {
-            return Cioc + " " + Name;
+            return Name;
         }
     }
 }

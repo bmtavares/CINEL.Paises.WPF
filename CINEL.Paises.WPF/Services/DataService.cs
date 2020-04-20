@@ -1,11 +1,21 @@
 ﻿namespace CINEL.Paises.WPF.Services
 {
-    using System;
-    using System.Collections.Generic;
-    using System.Linq;
-    using System.Text;
-    using System.Threading.Tasks;
+    using System.IO;
     public class DataService
     {
+        public string PathMain { get; } = @"Data";
+        public string PathFlags { get; } = @"Data\Flags";
+        //public string PathDatabase { get; } = @"";
+        public DataService()
+        {
+            if (!Directory.Exists(PathMain))
+            {
+                Directory.CreateDirectory(PathMain);
+            }
+            if (!Directory.Exists(PathFlags))
+            {
+                Directory.CreateDirectory(PathFlags);
+            }
+        }
     }
 }

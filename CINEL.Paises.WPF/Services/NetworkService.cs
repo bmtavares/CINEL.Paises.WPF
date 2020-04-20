@@ -2,6 +2,8 @@
 {
     using Models;
     using System.Net;
+    using System.Threading.Tasks;
+
     public class NetworkService
     {
         public Response CheckConnection()
@@ -26,6 +28,25 @@
                     Message = "Verifique a ligação à internet."
                 };
             }
+        }
+
+        public async Task GetFlag(Country sel)
+        {
+            WebClient webClient = new WebClient();
+            
+            try
+            {
+                webClient.DownloadFileAsync(new System.Uri(sel.Flag), $@"Data\Flags\{sel.Alpha3Code.ToLower()}.svg");
+            }
+            catch
+            {
+                //TODO
+            }
+            finally
+            {
+                webClient.Dispose();
+            }
+
         }
     }
 }

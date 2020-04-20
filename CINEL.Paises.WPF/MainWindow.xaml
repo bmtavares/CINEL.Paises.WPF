@@ -5,12 +5,19 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:CINEL.Paises.WPF"
         mc:Ignorable="d"
-        Title="Country Info Explorer" Height="450" Width="800">
+        Title="Country Info Explorer" Height="462" Width="800">
     <Grid>
-        <Button Content="Fetch from API" HorizontalAlignment="Left" Margin="10,389,0,0" VerticalAlignment="Top" Width="198" Click="Button_Click"/>
-        <ListBox x:Name="lBox" HorizontalAlignment="Left" Height="219" Margin="10,10,0,0" VerticalAlignment="Top" Width="772" MouseDoubleClick="lBox_MouseDoubleClick"/>
-        <TextBox x:Name="tBox" HorizontalAlignment="Left" Height="159" TextWrapping="Wrap" VerticalAlignment="Top" Width="555" Margin="227,250,0,0" Cursor="None"/>
-        <Image x:Name="imageFlag" HorizontalAlignment="Left" Height="118" VerticalAlignment="Top" Width="198" Margin="10,250,0,0"/>
+        <ListBox x:Name="lBoxCountries" HorizontalAlignment="Left" Height="375" Margin="10,10,0,0" VerticalAlignment="Top" Width="200" MouseDoubleClick="lBoxCountries_MouseDoubleClick"/>
+        <Image x:Name="imageFlag" ToolTip="Flag" HorizontalAlignment="Left" Height="118" VerticalAlignment="Top" Width="198" Margin="215,10,0,0"/>
+        <ProgressBar x:Name="pBarStatus" HorizontalAlignment="Left" Height="10" Margin="10,399,0,0" VerticalAlignment="Top" Width="100"/>
+        <Label x:Name="lblStatus" Content="Label" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="115,391,0,0"/>
+        <Label x:Name="lblCountryName" ToolTip="Name" Content="" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="413,10,0,0" FontSize="18" FontWeight="Bold"/>
+        <Label x:Name="lblCountryNativeName" ToolTip="Native name" Content="" HorizontalAlignment="Left" VerticalAlignment="Top" RenderTransformOrigin="10.355,4.558" Margin="413,39,0,0"/>
+        <Label x:Name="lblCountryAlpha2" ToolTip="Alpha 2 code" Content="" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="413,63,0,0" FontSize="10"/>
+        <Label x:Name="lblCountryAlpha3" ToolTip="Alpha 3 code" Content="" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="413,86,0,0" FontSize="10"/>
+        <DockPanel HorizontalAlignment="Left" Height="100" LastChildFill="False" Margin="228,252,0,0" VerticalAlignment="Top" Width="100"/>
+        <Label x:Name="lblHintDoubleClick" Content="Double click a country from the list to check it's information." HorizontalAlignment="Left" VerticalAlignment="Top" Margin="334,210,0,0" Visibility="Hidden" Foreground="#FF212121"/>
+        <Label x:Name="lblHintTooltip" Content="Hover over the property for it's name." HorizontalAlignment="Left" VerticalAlignment="Top" Margin="438,369,0,0" Foreground="#FF767676" FontSize="10" Visibility="Hidden"/>
 
     </Grid>
 </Window>
