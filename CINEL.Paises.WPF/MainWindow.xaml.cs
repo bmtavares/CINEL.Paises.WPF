@@ -17,13 +17,16 @@
     /// </summary>
     public partial class MainWindow : Window
     {
+        #region Properties
+        public string APIUrlBase { get; } = "https://restcountries.eu";
+        public string APIController { get; } = "/rest/v2/all";
+        #endregion
+
         #region Atributes
         private ApiService _apiService;
         private DataService _dataService;
         private NetworkService _networkService;
         private List<Country> _countries;
-        //private List<Flag> _flags;
-
         #endregion
 
         public MainWindow()
@@ -32,7 +35,6 @@
             _apiService = new ApiService();
             _dataService = new DataService();
             _networkService = new NetworkService();
-            //_flags = new List<Flag>();
             StartRoutine();
         }
 
@@ -45,7 +47,6 @@
             lblStatus.Content = "Checking connection.";
             var conn = _networkService.CheckConnection();
             pBarStatus.Value = 30; //TODO: Implement ProgressReport
-
             if (conn.IsSuccess)
             { // Connection Exists
                 lblStatus.Content = "Connection successful. Loading from the internet.";
@@ -53,12 +54,16 @@
                 await LoadApiCountries();
                 lblStatus.Content = "Connection successful. Fetching flags.";
                 pBarStatus.Value = 85;
+
+                await Task.Run(() => _dataService.SaveData(_countries));
+
                 await FetchFlags();
                 await ConvertFlags();
             }
             else
             { // Connection Unavailable
                 lblStatus.Content = "Connection not available. Loading from local database.";
+                MessageBox.Show(conn.Message, "Could not connect");
                 LoadLocalCountries();
             }
 
@@ -79,7 +84,7 @@
         /// </summary>
         private void LoadLocalCountries()
         {
-            //_countries = _dataService.GetData();
+            _countries = _dataService.GetData();
         }
 
         /// <summary>
@@ -90,7 +95,7 @@
         {
 
             var response = await _apiService.GetCountries
-                ("https://restcountries.eu", "/rest/v2/all");
+                (APIUrlBase, APIController);
 
             _countries = (List<Country>)response.Result;
         }
@@ -98,8 +103,6 @@
         /// <summary>
         /// Event for user double click on countries list
         /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
         private void lBoxCountries_MouseDoubleClick(object sender, MouseButtonEventArgs e)
         {
             lblHintDoubleClick.Visibility = Visibility.Hidden;
@@ -107,6 +110,8 @@
             CleanFields();
             PopulateFields(sel);
             lblHintTooltip.Visibility = Visibility.Visible;
+            lBoxBorders.Visibility = Visibility.Visible;
+            lBoxCurrencies.Visibility = Visibility.Visible;
         }
 
         /// <summary>
@@ -116,26 +121,22 @@
         /// </summary>
         private void CleanFields()
         {
-            imageFlag.Source = null;
+            imageFlag.Source = null; // TODO: Change to "unavailable" icon
             lblCountryName.Content = "-";
             lblCountryNativeName.Content = "-";
             lblCountryAlpha2.Content = "-";
             lblCountryAlpha3.Content = "-";
+            lBoxBorders.ItemsSource = null;
+            lBoxCurrencies.ItemsSource = null;
         }
 
         /// <summary>
         /// Populates all information fields with properties
         /// from the selection.
         /// </summary>
-        /// <param name="sel"></param>
+        /// <param name="sel">Selected Country</param>
         private void PopulateFields(Country sel)
         {
-            //ImageSourceConverter isc = new ImageSourceConverter();
-            //var flag = _flags.Find(x => sel.Alpha3Code == x.Alpha3Code).FlagImage;
-            //if(flag != null)
-            //{
-            //    imageFlag.Source = (ImageSource)isc.ConvertFrom(flag);
-            //}
             if (File.Exists($@"{_dataService.PathFlags}\{sel.Alpha3Code.ToLower()}.jpg")) //TODO: possibly move to _dataService
             {
                 var uri = new Uri(AppDomain.CurrentDomain.BaseDirectory + $@"{_dataService.PathFlags}\{sel.Alpha3Code.ToLower()}.jpg", UriKind.Absolute);
@@ -146,13 +147,13 @@
             lblCountryNativeName.Content = sel.NativeName;
             lblCountryAlpha2.Content = sel.Alpha2Code;
             lblCountryAlpha3.Content = sel.Alpha3Code;
+            lBoxBorders.ItemsSource = sel.Borders;
+            lBoxCurrencies.ItemsSource = sel.Currencies;
         }
 
         /// <summary>
-        /// Uses NetworkService to download all
-        /// flag .svg 's.
+        /// Uses NetworkService to download all flag .svg 's.
         /// </summary>
-        /// <returns></returns>
         private async Task FetchFlags()
         {
             foreach(var country in _countries)
@@ -161,47 +162,44 @@
             }
         }
 
-        private async Task ConvertFlags() // TODO: Improve memory usage & async
+        /// <summary>
+        /// Attempts to convert every .svg flag of Country list.
+        /// FetchFlags() should run successfully at least once before usage.
+        /// </summary>
+        /// <returns></returns>
+        private async Task ConvertFlags() // TODO: Look into ways to improve memory usage
         {
             foreach (var country in _countries)
             {
                 try
                 {
                     var svg = SvgDocument.Open($@"{_dataService.PathFlags}\{country.Alpha3Code.ToLower()}.svg");
-                    using (var bitmap = svg.Draw())
+                    using (var bitmap = svg.Draw()) // TODO: Set image size to standard for all flags
                     {
-                        bitmap.Save($@"{_dataService.PathFlags}\{country.Alpha3Code.ToLower()}.jpg", ImageFormat.Jpeg);
+                        await Task.Run(() => bitmap.Save($@"{_dataService.PathFlags}\{country.Alpha3Code.ToLower()}.jpg", ImageFormat.Jpeg));
+                    }
+
+                }
+                catch(ArgumentException ex)
+                {
+                    switch (country.Alpha3Code)
+                    {
+                        case "IOT":
+                        case "SHN":
+                            // hardcoded due to the following:
+                            // using <Svg> conversion will error out due to yet unidentified issues with the rendering of the original files
+                            // catching exception to always use local files and prevent more processing during each cycle
+                            break;
+                        default:
+                            MessageBox.Show(ex.Message, "Error");
+                            break;
                     }
                 }
-                catch
+                catch (Exception ex)
                 {
-                    //TODO
+                    MessageBox.Show(ex.Message, "Error");
                 }
             }
         }
-
-        ///// <summary>
-        ///// Converts flags and loads them into memory
-        ///// </summary>
-        ///// <returns></returns>
-        //private async Task ConvertFlags()
-        //{
-        //    foreach(var country in _countries)
-        //    {
-        //        try
-        //        {
-        //            var svg = SvgDocument.Open($@"{_dataService.PathFlags}\{country.Alpha3Code.ToLower()}.svg");
-        //            _flags.Add(new Flag
-        //            {
-        //                Alpha3Code = country.Alpha3Code,
-        //                FlagImage = svg.Draw()
-        //            });
-        //        }
-        //        catch
-        //        {
-        //            //TODO
-        //        }
-        //    }
-        //}
     }
 }

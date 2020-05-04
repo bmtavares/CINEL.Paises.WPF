@@ -1,8 +1,10 @@
 ﻿namespace CINEL.Paises.WPF.Services
 {
     using Models;
+    using System;
     using System.Net;
     using System.Threading.Tasks;
+    using System.Windows;
 
     public class NetworkService
     {
@@ -25,7 +27,7 @@
                 return new Response
                 {
                     IsSuccess = false,
-                    Message = "Verifique a ligação à internet."
+                    Message = "Check the Internet connection."
                 };
             }
         }
@@ -38,9 +40,9 @@
             {
                 webClient.DownloadFileAsync(new System.Uri(sel.Flag), $@"Data\Flags\{sel.Alpha3Code.ToLower()}.svg");
             }
-            catch
+            catch (Exception ex)
             {
-                //TODO
+                MessageBox.Show(ex.Message, "Error");
             }
             finally
             {
