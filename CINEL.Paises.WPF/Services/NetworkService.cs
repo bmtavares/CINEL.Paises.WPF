@@ -38,7 +38,7 @@
             
             try
             {
-                webClient.DownloadFileAsync(new System.Uri(sel.Flag), $@"Data\Flags\{sel.Alpha3Code.ToLower()}.svg");
+                await Task.Run(() => webClient.DownloadFileAsync(new Uri(sel.Flag), $@"Data\Flags\{sel.Alpha3Code.ToLower()}.svg"));
             }
             catch (Exception ex)
             {

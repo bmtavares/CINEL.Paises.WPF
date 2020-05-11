@@ -475,12 +475,19 @@
         /// Saves data from the Country list into the database
         /// </summary>
         /// <param name="countries">Countries</param>
-        public void SaveData(List<Country> countries)
+        public void SaveData(IProgress<ProgressReportModel> progress, List<Country> countries)
         {
+            ProgressReportModel report = new ProgressReportModel();
             try
             {
                 foreach(var country in countries)
                 {
+
+                    report.CountriesResolved.Add(country);
+                    report.PercentComplete = (report.CountriesResolved.Count * 100) / countries.Count;
+                    report.StatusMessage = $"Saving country data for offline viewing {report.CountriesResolved.Count}/{countries.Count}";
+                    progress.Report(report);
+
                     string sqlcommand = string.Format(
                         "INSERT OR REPLACE INTO countries " +
                         "VALUES('{0}','{1}','{2}','{3}','{4}','{5}',{6},'{7}','{8}','{9}','{10}','{11}','{12}','{13}')",
@@ -634,6 +641,36 @@
             {
                 MessageBox.Show(ex.Message, "Database error");
             }
+        }
+
+        /// <summary>
+        /// Checks if a specific file is free for operations 
+        /// or in use by another proccess.
+        /// 
+        /// Credit: https://stackoverflow.com/questions/876473/is-there-a-way-to-check-if-a-file-is-in-use
+        /// </summary>
+        /// <param name="file">File to check</param>
+        /// <returns>True: File in use</returns>
+        public bool IsFileLocked(FileInfo file)
+        {
+            try
+            {
+                using (FileStream stream = file.Open(FileMode.Open, FileAccess.Read, FileShare.None))
+                {
+                    stream.Close();
+                }
+            }
+            catch (IOException)
+            {
+                //the file is unavailable because it is:
+                //still being written to
+                //or being processed by another thread
+                //or does not exist (has already been processed)
+                return true;
+            }
+
+            //file is not locked
+            return false;
         }
 
         ///// <summary>
