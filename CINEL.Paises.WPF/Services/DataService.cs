@@ -4,6 +4,7 @@
     using System.Collections.Generic;
     using System.Data.SQLite;
     using System.IO;
+    using System.Linq;
     using System.Windows;
     using CINEL.Paises.WPF.Models;
 
@@ -140,7 +141,8 @@
 
                 sqlcommand =
                     "CREATE TABLE IF NOT EXISTS currencies(" +
-                    "Code CHAR(3) PRIMARY KEY," +
+                    "id INTEGER PRIMARY KEY AUTOINCREMENT," +
+                    "Code CHAR(3)," +
                     "Name VARCHAR(250)," +
                     "Symbol VARCHAR(1)" +
                     ");";
@@ -195,11 +197,18 @@
                 LocalNonQuery(sqlcommand);
 
                 //Create connective tables
+                //sqlcommand =
+                //    "CREATE TABLE IF NOT EXISTS countries_currencies(" +
+                //    "Alpha3Code CHAR(3) REFERENCES countries(Alpha3Code)," +
+                //    "Code CHAR(3) REFERENCES currencies(Code)," +
+                //    "PRIMARY KEY(Alpha3Code, Code)" +
+                //    ");";
+                //LocalNonQuery(sqlcommand);
                 sqlcommand =
                     "CREATE TABLE IF NOT EXISTS countries_currencies(" +
                     "Alpha3Code CHAR(3) REFERENCES countries(Alpha3Code)," +
-                    "Code CHAR(3) REFERENCES currencies(Code)," +
-                    "PRIMARY KEY(Alpha3Code, Code)" +
+                    "id_Currency REFERENCES currencies(id)," +
+                    "PRIMARY KEY(Alpha3Code, id_Currency)" +
                     ");";
                 LocalNonQuery(sqlcommand);
 
@@ -392,12 +401,12 @@
                     supportReader.Close();
 
                     //Currencies
-                    supportCommand.CommandText = "SELECT Code FROM countries_currencies " +
+                    supportCommand.CommandText = "SELECT id_currency FROM countries_currencies " +
                         $"WHERE Alpha3Code = '{a3Code}'";
                     supportReader = supportCommand.ExecuteReader();
                     while (supportReader.Read())
                     {
-                        currencies.Add(masterCurrencies.Find(x => x.Code == (string)supportReader["Code"]));
+                        currencies.Add(masterCurrencies.ElementAt(Convert.ToInt32(supportReader["id_currency"])-1));
                     }
                     supportReader.Close();
 
@@ -565,14 +574,25 @@
 
                     foreach (var currency in country.Currencies)
                     {
-                        sqlcommand = string.Format("INSERT OR REPLACE INTO currencies VALUES" +
-                            "('{0}','{1}','{2}')",
+                        // commands are more complex due to the existance of '(none)' and other abnormal and repeated values
+
+                        // if any error should occur, insert id NULL
+                        // refer to https://www.sqlite.org/faq.html#q1
+                        sqlcommand = string.Format("INSERT INTO currencies(Code,Name,Symbol) " +
+                            "SELECT '{0}','{1}','{2}' " +
+                            "WHERE NOT EXISTS(" +
+                            "               SELECT 1 " +
+                            "               FROM currencies " +
+                            "               WHERE Code = '{0}' AND Name = '{1}' AND Symbol = '{2}')",
                             currency.Code, SanitizeString(currency.Name), currency.Symbol);
                         LocalNonQuery(sqlcommand);
-
-                        sqlcommand = string.Format("INSERT OR REPLACE INTO countries_currencies VALUES" +
-                            "('{0}','{1}')",
-                            country.Alpha3Code, currency.Code);
+                        
+                        sqlcommand = string.Format("INSERT OR REPLACE INTO countries_currencies " +
+                            "(Alpha3Code,id_Currency) " +
+                            "SELECT '{0}', id " +
+                            "FROM currencies " +
+                            "WHERE currencies.Code = '{1}' AND currencies.Name = '{2}' AND currencies.Symbol = '{3}'",
+                            country.Alpha3Code, currency.Code, SanitizeString(currency.Name), currency.Symbol);
                         LocalNonQuery(sqlcommand);
                     }
 
@@ -673,6 +693,7 @@
             return false;
         }
 
+        // Should not be required due to INSERT OR REPLACE
         ///// <summary>
         ///// Deletes the whole database.
         ///// </summary>

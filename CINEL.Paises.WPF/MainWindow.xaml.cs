@@ -11,6 +11,7 @@
     using Svg;
     using Models;
     using Services;
+    using Microsoft.Maps.MapControl.WPF;
 
     /// <summary>
     /// Interaction logic for MainWindow.xaml
@@ -27,7 +28,6 @@
         private DataService _dataService;
         private NetworkService _networkService;
         private List<Country> _countries;
-        //private BitmapImage _noflag;
         #endregion
 
         public MainWindow()
@@ -72,39 +72,15 @@
                 return;
             }
 
-            //await CachePlaceholder();
             lblIcon.Visibility = Visibility.Hidden;
-            lBoxCountries.Visibility = Visibility.Visible;
+            gridCountries.Visibility = Visibility.Visible;
             lBoxCountries.ItemsSource = _countries; // populate list with countries
-            lblStatus.Content = $"Successfully loaded {_countries.Count} countries.{Environment.NewLine}" +
+            gridLoading.Visibility = Visibility.Hidden;
+            gridFinish.Visibility = Visibility.Visible;
+            lblFinish.Content = $"Successfully loaded {_countries.Count} countries.{Environment.NewLine}" +
                 $"Double click a country from the list to check it's information.";
             pBarStatus.Value = 100;
         }
-
-        /// <summary>
-        /// Caches noflag resource in memory for later use
-        /// </summary>
-        //private async Task CachePlaceholder()
-        //{
-        //    await Task.Run(() =>
-        //        {
-        //            try
-        //            {
-        //                if (File.Exists(@"Resources\noflag.jpg"))
-        //                {
-        //                    var uri = new Uri(AppDomain.CurrentDomain.BaseDirectory + @"Resources\noflag.jpg", UriKind.Absolute);
-        //                    var bitmap = new BitmapImage(uri);
-        //                    imageFlag.Source = bitmap;
-        //                }
-        //            }
-        //            catch(Exception ex)
-        //            {
-        //                MessageBox.Show(ex.Message, "Error");
-        //            }
-        //        }
-        //    );
-
-        //}
 
         /// <summary>
         /// Loads Countries from local database on disk.
@@ -155,7 +131,7 @@
         /// </summary>
         private void lBoxCountries_MouseDoubleClick(object sender, MouseButtonEventArgs e)
         {
-            gridLoading.Visibility = Visibility.Hidden;
+            gridFinish.Visibility = Visibility.Hidden;
             var sel = lBoxCountries.SelectedItem as Country;
             CleanFields();
             PopulateFields(sel);
@@ -164,9 +140,12 @@
 
         private void lBoxBorders_MouseDoubleClick(object sender, MouseButtonEventArgs e)
         {
-            var sel = _countries.Find(x => x.Alpha3Code == lBoxBorders.SelectedItem.ToString());
-            CleanFields();
-            PopulateFields(sel);
+            if(lBoxBorders.SelectedItem != null)
+            {
+                var sel = _countries.Find(x => x.Alpha3Code == lBoxBorders.SelectedItem.ToString());
+                CleanFields();
+                PopulateFields(sel);
+            }
         }
 
         /// <summary>
@@ -176,6 +155,7 @@
         /// </summary>
         private void CleanFields()
         {
+            // TODO: Insert no flag
             //if (_noflag != null)
             //    imageFlag.Source = _noflag;
             //else
@@ -197,19 +177,31 @@
         /// <param name="sel">Selected Country</param>
         private void PopulateFields(Country sel)
         {
-            if (File.Exists($@"{_dataService.PathFlags}\{sel.Alpha3Code.ToLower()}.jpg")) //TODO: possibly move to _dataService
+            if (File.Exists($@"{_dataService.PathFlags}\{sel.Alpha3Code.ToLower()}.jpg"))
             {
                 var uri = new Uri(AppDomain.CurrentDomain.BaseDirectory + $@"{_dataService.PathFlags}\{sel.Alpha3Code.ToLower()}.jpg", UriKind.Absolute);
                 var bitmap = new BitmapImage(uri);
                 imageFlag.Source = bitmap;
             }
             lblCountryName.Content = sel.Name;
-            lblCountryNativeName.Content = sel.NativeName;
+            lblCountryNativeName.Content = $"{sel.NativeName} ({sel.Demonym})";
             lblCountryAlpha2.Content = sel.Alpha2Code;
             lblCountryAlpha3.Content = sel.Alpha3Code;
             lblCountryCapital.Content = sel.Capital;
             lBoxBorders.ItemsSource = sel.Borders;
             lBoxCurrencies.ItemsSource = sel.Currencies;
+
+            if(sel.LatLng.Count == 2)
+            {
+                uxMap.Center = new Location(sel.LatLng[0], sel.LatLng[1]);
+                uxMap.ZoomLevel = 3;
+            }
+            else
+            { // certain countries do not have a location value. Sets default
+                uxMap.Center = new Location(0, 0);
+                uxMap.ZoomLevel = 1;
+            }
+            
         }
 
         /// <summary>
