@@ -13,7 +13,8 @@
         public List<string> AltSpellings { get; set; }
         public string Region { get; set; }
         public string Subregion { get; set; }
-        public int Population { get; set; }
+        public int Population { get; set; }         // when model was written China was the most populous country at 1.4 billion
+                                                    // meaning int is enough for the foreseeable future
         public List<double> LatLng { get; set; }    //change to array[2] or maybe create 2 separate props?
         public string Demonym { get; set; }
         public double Area { get; set; }

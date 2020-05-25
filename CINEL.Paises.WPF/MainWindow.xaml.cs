@@ -9,9 +9,10 @@
     using System.Windows.Input;
     using System.Windows.Media.Imaging;
     using Svg;
+    using Microsoft.Maps.MapControl.WPF;
     using Models;
     using Services;
-    using Microsoft.Maps.MapControl.WPF;
+    using System.Linq;
 
     /// <summary>
     /// Interaction logic for MainWindow.xaml
@@ -54,10 +55,13 @@
             { // Connection Exists
                 await LoadApiCountries(progress);
 
-                await Task.Run(() => _dataService.SaveData(progress,_countries));
-
                 await FetchFlags(progress);
                 await ConvertFlags(progress);
+
+                btnHideLoading.Visibility = Visibility.Visible;
+
+                await Task.Run(() => _dataService.SaveData(progress,_countries));
+                pBarStatus.Visibility = Visibility.Hidden;
             }
             else
             { // Connection Unavailable
@@ -72,14 +76,18 @@
                 return;
             }
 
-            lblIcon.Visibility = Visibility.Hidden;
-            gridCountries.Visibility = Visibility.Visible;
-            lBoxCountries.ItemsSource = _countries; // populate list with countries
-            gridLoading.Visibility = Visibility.Hidden;
-            gridFinish.Visibility = Visibility.Visible;
-            lblFinish.Content = $"Successfully loaded {_countries.Count} countries.{Environment.NewLine}" +
-                $"Double click a country from the list to check it's information.";
-            pBarStatus.Value = 100;
+            if (gridLoading.Visibility == Visibility.Visible)
+            {
+                gridCountries.Visibility = Visibility.Visible;
+                lBoxCountries.ItemsSource = _countries.OrderBy(x => x.Name); // populate list with countries
+                // it is ordered due to being reachable from offline mode
+                // if saving is stopped during online mode, info is saved out of order
+                gridLoading.Visibility = Visibility.Hidden;
+                gridFinish.Visibility = Visibility.Visible;
+                lblFinish.Content = $"Successfully loaded {_countries.Count} countries.{Environment.NewLine}" +
+                    $"Double click a country from the list to check it's information.";
+                pBarStatus.Visibility = Visibility.Hidden;
+            }
         }
 
         /// <summary>
@@ -147,6 +155,12 @@
                 PopulateFields(sel);
             }
         }
+        private void btnHideLoading_Click(object sender, RoutedEventArgs e)
+        {
+            gridCountries.Visibility = Visibility.Visible;
+            lBoxCountries.ItemsSource = _countries; // populate list with countries
+            gridLoading.Visibility = Visibility.Hidden;
+        }
 
         /// <summary>
         /// Clears all information fields into a default position
@@ -155,19 +169,19 @@
         /// </summary>
         private void CleanFields()
         {
-            // TODO: Insert no flag
-            //if (_noflag != null)
-            //    imageFlag.Source = _noflag;
-            //else
-                imageFlag.Source = null;
+            imageFlag.Source = new BitmapImage(new Uri("Resources/flagnotfound.png", UriKind.Relative));
 
             lblCountryName.Content = string.Empty;
             lblCountryNativeName.Content = string.Empty;
-            lblCountryAlpha2.Content = string.Empty;
-            lblCountryAlpha3.Content = string.Empty;
+            lblCountryRegionNSub.Content = string.Empty;
+            lblCountryAlphaCodes.Content = string.Empty;
             lblCountryCapital.Content = string.Empty;
+            lblCountryPopulation.Content = "No info";
+            lblCountryGini.Content = "No info";
+            lblCountryArea.Content = "No info";
             lBoxBorders.ItemsSource = null;
             lBoxCurrencies.ItemsSource = null;
+            lBoxLanguages.ItemsSource = null;
         }
 
         /// <summary>
@@ -177,21 +191,40 @@
         /// <param name="sel">Selected Country</param>
         private void PopulateFields(Country sel)
         {
-            if (File.Exists($@"{_dataService.PathFlags}\{sel.Alpha3Code.ToLower()}.jpg"))
-            {
-                var uri = new Uri(AppDomain.CurrentDomain.BaseDirectory + $@"{_dataService.PathFlags}\{sel.Alpha3Code.ToLower()}.jpg", UriKind.Absolute);
-                var bitmap = new BitmapImage(uri);
-                imageFlag.Source = bitmap;
-            }
+            //if (_finishLoading)
+            //{
+                if (File.Exists($@"{_dataService.PathFlags}\{sel.Alpha3Code.ToLower()}.jpg"))
+                {
+                    var uri = new Uri(AppDomain.CurrentDomain.BaseDirectory + $@"{_dataService.PathFlags}\{sel.Alpha3Code.ToLower()}.jpg", UriKind.Absolute);
+                    var bitmap = new BitmapImage(uri);
+                    imageFlag.Source = bitmap;
+                }
+            //}
+
             lblCountryName.Content = sel.Name;
             lblCountryNativeName.Content = $"{sel.NativeName} ({sel.Demonym})";
-            lblCountryAlpha2.Content = sel.Alpha2Code;
-            lblCountryAlpha3.Content = sel.Alpha3Code;
+            lblCountryRegionNSub.Content = $"{sel.Region} / {sel.Subregion}";
+            lblCountryAlphaCodes.Content = $"{sel.Alpha2Code} / {sel.Alpha3Code}";
             lblCountryCapital.Content = sel.Capital;
+
+            if(sel.Population != 0)
+            {
+                lblCountryPopulation.Content = sel.Population.ToString();
+            }
+            if (sel.Gini != 0)
+            {
+                lblCountryGini.Content = sel.Gini.ToString();
+            }
+            if(sel.Area != 0)
+            {
+                lblCountryArea.Content = $"{sel.Area} km²";
+            }
+
             lBoxBorders.ItemsSource = sel.Borders;
             lBoxCurrencies.ItemsSource = sel.Currencies;
+            lBoxLanguages.ItemsSource = sel.Languages;
 
-            if(sel.LatLng.Count == 2)
+            if (sel.LatLng.Count == 2)
             {
                 uxMap.Center = new Location(sel.LatLng[0], sel.LatLng[1]);
                 uxMap.ZoomLevel = 3;

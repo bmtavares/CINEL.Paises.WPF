@@ -9,35 +9,45 @@
         Title="Country Info Explorer" Height="462" Width="800" BorderThickness="0">
     <Grid>
         <m:Map x:Name="uxMap" UseInertia="True"/>
-        <Grid Background="Black" Opacity="0.60"/>
+        <Grid Background="Black" Opacity="0.60">
+            <ProgressBar x:Name="pBarStatus" HorizontalAlignment="Left" Height="15" Margin="0,416,0,0" VerticalAlignment="Top" Width="792"/>
+        </Grid>
         <Grid x:Name="gridLoading" Visibility="Visible" Margin="40,80,40,80">
-            <Grid Background="Black" Opacity="0.60"/>
-            <Label x:Name="lblIcon" FontFamily="Segoe MDL2 Assets" Content="" FontSize="62" FontWeight="ExtraBlack" Margin="59,92,578,101" Foreground="White"/>
-            <Label x:Name="lblStatus" Content="Label" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="201,144,0,0" Foreground="White"/>
-            <ProgressBar x:Name="pBarStatus" HorizontalAlignment="Left" Height="23" Margin="201,105,0,0" VerticalAlignment="Top" Width="455"/>
+            <Grid Background="Black" Opacity="0.60">
+                <Button x:Name="btnHideLoading" Visibility="Hidden" Content="Finish in background" Background="Black" Opacity="0.60" Foreground="White" HorizontalAlignment="Left" VerticalAlignment="Top" Width="173" Margin="508,199,0,0" Height="43" FontWeight="Bold" Click="btnHideLoading_Click"/>
+            </Grid>
+            <Label x:Name="lblIcon" FontFamily="Segoe MDL2 Assets" Content="" FontSize="62" FontWeight="ExtraBlack" Margin="93,85,530,100" Foreground="White"/>
+            <Label x:Name="lblStatus" Content="Label" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="187,100,0,0" Foreground="White" FontSize="20"/>
         </Grid>
         <Grid x:Name="gridFinish" Visibility="Hidden" Margin="270,184,50,163">
             <Grid Background="Black" Opacity="0.60"/>
             <Label x:Name="lblFinish" Content="Label" HorizontalAlignment="Left" VerticalAlignment="Top" Foreground="White" Margin="19,19,0,0"/>
         </Grid>
-        <Grid x:Name="gridCountryInfo" Margin="230,10,10,10" Visibility="Hidden">
+        <Grid x:Name="gridCountryInfo" Margin="230,10,10,15" Visibility="Hidden">
             <Grid Background="Black" Opacity="0.60"/>
             <Image x:Name="imageFlag" ToolTip="Flag" HorizontalAlignment="Left" Height="118" VerticalAlignment="Top" Width="198" Margin="5,5,5,5"/>
             <Label x:Name="lblCountryName" ToolTip="Name" Content="" Foreground="White" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="203,10,0,0" FontSize="18" FontWeight="Bold"/>
             <Label x:Name="lblCountryNativeName" ToolTip="Native name (Demonym)" Foreground="White" Content="" HorizontalAlignment="Left" VerticalAlignment="Top" RenderTransformOrigin="10.355,4.558" Margin="203,33,0,0"/>
-            <Label x:Name="lblCountryAlpha2" ToolTip="Alpha 2 code" Foreground="White" Content="" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="203,49,0,0" FontSize="10"/>
-            <Label x:Name="lblCountryAlpha3" ToolTip="Alpha 3 code" Foreground="White" Content="" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="203,62,0,0" FontSize="10"/>
+            <Label x:Name="lblCountryRegionNSub" ToolTip="Region / Subregion" Foreground="White" Content="" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="203,49,0,0" FontSize="10"/>
+            <Label x:Name="lblCountryAlphaCodes" ToolTip="Alpha 2 Code / Alpha 3 Code" Foreground="White" Content="" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="203,62,0,0" FontSize="10"/>
             <Label x:Name="lblCountryCapital" FontFamily="Bold" Foreground="White" ToolTip="Capital" Content="" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="203,78,0,0" FontSize="10"/>
-            <Label x:Name="lblHintTooltip" Content="Hover over properties for more information." HorizontalAlignment="Left" VerticalAlignment="Top" Margin="193,378,0,0" Foreground="#FF767676" FontSize="10" Visibility="Visible"/>
+            <Label x:Name="lblHintTooltip" Content="Hover over the properties at the top or those with an ⁺ for more information." HorizontalAlignment="Left" VerticalAlignment="Top" Margin="120,375,0,0" Foreground="#FF767676" FontSize="10" Visibility="Visible"/>
             <ListBox x:Name="lBoxCurrencies" Background="{x:Null}" Foreground="White" BorderThickness="1" HorizontalAlignment="Left" Height="100" VerticalAlignment="Top" Width="200" Margin="121,261,0,0" Visibility="Visible"/>
             <ListBox x:Name="lBoxBorders" Background="{x:Null}" Foreground="White" BorderThickness="1" HorizontalAlignment="Left" Height="100" VerticalAlignment="Top" Width="100" Margin="10,261,0,0" Visibility="Visible" MouseDoubleClick="lBoxBorders_MouseDoubleClick"/>
-            <Label Content="Borders" ToolTip="Double click to go to that country" FontWeight="Bold" Foreground="#FF767676" FontSize="10" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="10,238,0,0" />
-            <Label Content="Currencies" Foreground="#FF767676" FontSize="10" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="121,238,0,0" FontWeight="Bold"/>
+            <Label Content="Borders⁺" ToolTip="Double click to go to that country" FontWeight="Bold" Foreground="#FF767676" FontSize="12" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="10,238,0,0" />
+            <Label Content="Currencies" Foreground="#FF767676" FontSize="12" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="121,238,0,0" FontWeight="Bold"/>
+            <ListBox x:Name="lBoxLanguages" Background="{x:Null}" Foreground="White" BorderThickness="1" HorizontalAlignment="Left" Height="100" VerticalAlignment="Top" Width="200" Margin="332,261,0,0" Visibility="Visible"/>
+            <Label Content="Languages" Foreground="#FF767676" FontSize="12" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="332,238,0,0" FontWeight="Bold"/>
+            <Label Content="Population" FontWeight="Bold" Foreground="#FF767676" FontSize="12" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="10,143,0,0" />
+            <Label x:Name="lblCountryPopulation" Foreground="White" Content="" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="10,166,0,0" FontSize="12"/>
+            <Label Content="Gini Index" Foreground="#FF767676" FontSize="12" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="131,143,0,0" FontWeight="Bold"/>
+            <Label x:Name="lblCountryGini" Foreground="White" Content="" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="131,166,0,0" FontSize="12"/>
+            <Label Content="Area" Foreground="#FF767676" FontSize="12" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="253,143,0,0" FontWeight="Bold"/>
+            <Label x:Name="lblCountryArea" Foreground="White" Content="" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="253,166,0,0" FontSize="12"/>
         </Grid>
-
-        <Grid x:Name="gridCountries" Visibility="Hidden" Margin="0,0,567,0" >
+        <Grid x:Name="gridCountries" Visibility="Hidden" Margin="0,10,567,15" >
             <Grid Background="Black" Opacity="0.60"/>
-            <ListBox x:Name="lBoxCountries" HorizontalAlignment="Left" Height="431" VerticalAlignment="Top" Width="225" MouseDoubleClick="lBoxCountries_MouseDoubleClick" BorderThickness="0" Background="{x:Null}" Foreground="White" Margin="2,2,2,2" ScrollViewer.HorizontalScrollBarVisibility="Disabled"/>
+            <ListBox x:Name="lBoxCountries" HorizontalAlignment="Left" Height="396" VerticalAlignment="Top" Width="215" MouseDoubleClick="lBoxCountries_MouseDoubleClick" BorderThickness="0" Background="{x:Null}" Foreground="White" Margin="1,1,1,1" ScrollViewer.HorizontalScrollBarVisibility="Disabled"/>
         </Grid>
     </Grid>
 </Window>
