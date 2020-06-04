@@ -494,7 +494,7 @@
 
                     report.CountriesResolved.Add(country);
                     report.PercentComplete = (report.CountriesResolved.Count * 100) / countries.Count;
-                    report.StatusMessage = $"Saving country data for offline viewing {report.CountriesResolved.Count}/{countries.Count}";
+                    report.StatusMessage = $"Saving country data for offline viewing{Environment.NewLine}({report.CountriesResolved.Count} of {countries.Count})";
                     progress.Report(report);
 
                     string sqlcommand = string.Format(
@@ -663,6 +663,7 @@
             }
         }
 
+        // TODO: turn async
         /// <summary>
         /// Checks if a specific file is free for operations 
         /// or in use by another proccess.

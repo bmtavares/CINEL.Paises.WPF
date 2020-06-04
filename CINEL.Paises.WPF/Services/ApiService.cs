@@ -51,41 +51,6 @@
             }
         }
 
-        //public async Task<Response> GetFlag(string urlBase, string controller)
-        //{
-        //    try
-        //    {
-        //        var client = new HttpClient();
-        //        client.BaseAddress = new Uri(urlBase);
 
-        //        var response = await client.GetAsync(controller);
-
-        //        //
-
-        //        if (!response.IsSuccessStatusCode)
-        //        {
-        //            var result = await response.Content.ReadAsStringAsync();
-        //            return new Response
-        //            {
-        //                IsSuccess = false,
-        //                Message = result //TODO check
-        //            };
-        //        }
-
-        //        return new Response
-        //        {
-        //            IsSuccess = true,
-        //            Result = response.Content
-        //        };
-        //    }
-        //    catch (Exception e)
-        //    {
-        //        return new Response
-        //        {
-        //            IsSuccess = false,
-        //            Message = e.Message
-        //        };
-        //    }
-        //}
     }
 }
